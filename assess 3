@@ -5,7 +5,7 @@ import json
 from threading import Thread
 
 # Configure Google Maps Distance Matrix API key
-API_KEY = "YOUR_GOOGLE_MAPS_API_KEY"
+API_KEY = "AIzaSyD_jA7ABwQSizxPzXyQe0ibuhPBmRQX_nA "
 
 # Define coordinates for a test location (e.g., San Francisco)
 LOCATION = "San Francisco, CA"
