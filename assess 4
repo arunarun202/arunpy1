@@ -6,7 +6,7 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
 # Configure API endpoint and parameters
-API_ENDPOINT = "https://disease.sh/v3/covid-19/all"
+API_ENDPOINT = "0eca8d38ffmsh4fc9514ddf68a48p17f18djsn2ba5234eed00"
 COUNTRY_DATA_ENDPOINT = "https://disease.sh/v3/covid-19/countries"
 COUNTRY_CODE = "US"  # Replace with your desired country code
 
