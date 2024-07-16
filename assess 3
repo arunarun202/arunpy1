@@ -1,0 +1,70 @@
+import requests
+import folium
+import time
+import json
+from threading import Thread
+
+# Configure Google Maps Distance Matrix API key
+API_KEY = "YOUR_GOOGLE_MAPS_API_KEY"
+
+# Define coordinates for a test location (e.g., San Francisco)
+LOCATION = "San Francisco, CA"
+
+# Function to fetch traffic data from Google Maps Distance Matrix API
+def get_traffic_data(origin, destination):
+    url = f"https://maps.googleapis.com/maps/api/distancematrix/json?origins={origin}&destinations={destination}&key={API_KEY}&mode=driving&traffic_model=best_guess"
+    response = requests.get(url)
+    if response.status_code == 200:
+        data = response.json()
+        if data['rows'][0]['elements'][0]['status'] == 'OK':
+            duration_in_traffic = data['rows'][0]['elements'][0]['duration_in_traffic']['value']
+            duration = data['rows'][0]['elements'][0]['duration']['value']
+            return duration_in_traffic, duration
+        else:
+            print(f"Error fetching traffic data: {data['rows'][0]['elements'][0]['status']}")
+            return None, None
+    else:
+        print(f"Error fetching traffic data: {response.status_code}")
+        return None, None
+
+
+# Function to update the map with traffic data
+def update_map(map_obj, traffic_data):
+    # Remove previous traffic markers
+    for layer in map_obj.get_root().iter_descendants():
+        if isinstance(layer, folium.Marker) and layer.popup:
+            if 'Traffic Duration' in layer.popup.get_text():
+                layer.remove(map_obj)
+
+    # Add a new marker to the map
+    if traffic_data:
+        duration_in_traffic, duration = traffic_data
+        folium.Marker(location=[37.7749, -122.4194],
+                      popup=f"Traffic Duration: {duration_in_traffic} seconds (Normal Duration: {duration} seconds)",
+                      icon=folium.Icon(color='red', icon='info-sign')).add_to(map_obj)
+
+    # Save the updated map
+    map_obj.save('traffic_map.html')
+
+
+# Initialize a Folium map centered on San Francisco
+map_obj = folium.Map(location=[37.7749, -122.4194], zoom_start=10)
+
+# Create a thread to continuously fetch and update traffic data
+def run_traffic_updates():
+    while True:
+        traffic_data = get_traffic_data(LOCATION, LOCATION)
+        update_map(map_obj, traffic_data)
+        time.sleep(10)  # Update every 10 seconds
+
+# Start the thread to update traffic data
+traffic_thread = Thread(target=run_traffic_updates)
+traffic_thread.daemon = True
+traffic_thread.start()
+
+# Save the initial map
+update_map(map_obj, None)
+
+# Keep the script running to update the map (optional)
+while True:
+    time.sleep(1)
