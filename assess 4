@@ -1,0 +1,72 @@
+import requests
+import json
+import datetime
+import time
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+
+# Configure API endpoint and parameters
+API_ENDPOINT = "https://disease.sh/v3/covid-19/all"
+COUNTRY_DATA_ENDPOINT = "https://disease.sh/v3/covid-19/countries"
+COUNTRY_CODE = "US"  # Replace with your desired country code
+
+# Function to fetch global COVID-19 data
+def get_global_data():
+    response = requests.get(API_ENDPOINT)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        print(f"Error fetching global data: {response.status_code}")
+        return None
+
+# Function to fetch country-specific COVID-19 data
+def get_country_data(country_code):
+    response = requests.get(f"{COUNTRY_DATA_ENDPOINT}/{country_code}")
+    if response.status_code == 200:
+        return response.json()
+    else:
+        print(f"Error fetching country data: {response.status_code}")
+        return None
+
+# Function to update and display global statistics
+def update_global_stats(global_data):
+    print("\nGlobal COVID-19 Statistics:")
+    print(f"  Total Cases: {global_data['cases']:,}")
+    print(f"  Total Deaths: {global_data['deaths']:,}")
+    print(f"  Total Recovered: {global_data['recovered']:,}")
+    print(f"  Active Cases: {global_data['active']:,}")
+    print(f"  Last Updated: {datetime.datetime.fromtimestamp(global_data['updated'] / 1000).strftime('%Y-%m-%d %H:%M:%S')}")
+
+# Function to update and display country-specific statistics
+def update_country_stats(country_data):
+    print("\nCOVID-19 Statistics for", country_data['country'])
+    print(f"  Total Cases: {country_data['cases']:,}")
+    print(f"  Total Deaths: {country_data['deaths']:,}")
+    print(f"  Total Recovered: {country_data['recovered']:,}")
+    print(f"  Active Cases: {country_data['active']:,}")
+    print(f"  Critical Cases: {country_data['critical']:,}")
+    print(f"  Last Updated: {datetime.datetime.fromtimestamp(country_data['updated'] / 1000).strftime('%Y-%m-%d %H:%M:%S')}")
+
+# Function to create and display a line graph for selected data
+def plot_data(data, metric, title, y_axis_title):
+    dates = [datetime.datetime.fromtimestamp(x['updated'] / 1000).strftime('%Y-%m-%d') for x in data]
+    values = [x[metric] for x in data]
+
+    fig = go.Figure(data=go.Scatter(x=dates, y=values, mode='lines+markers', name=metric))
+    fig.update_layout(title=title, xaxis_title="Date", yaxis_title=y_axis_title)
+    fig.show()
+
+# Main loop to fetch and display data
+while True:
+    global_data = get_global_data()
+    country_data = get_country_data(COUNTRY_CODE)
+
+    if global_data and country_data:
+        update_global_stats(global_data)
+        update_country_stats(country_data)
+
+        # Plot data for the selected country
+        plot_data(country_data['timeline']['cases'], 'cases', "Cases Over Time", "Total Cases")
+        # You can add more plots for other metrics like deaths, recovered, etc.
+
+    time.sleep(60 * 5)  # Update every 5 minutes
