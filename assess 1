@@ -1,0 +1,46 @@
+import requests
+import json
+import time
+from datetime import datetime
+
+# Replace with your OpenWeatherMap API key
+API_KEY = "YOUR_API_KEY"
+
+# Location to get weather data for
+city = "London"
+
+# Function to fetch weather data
+def get_weather_data(city, api_key):
+    base_url = "http://api.openweathermap.org/data/2.5/weather?"
+    complete_url = base_url + "appid=" + api_key + "&q=" + city
+    response = requests.get(complete_url)
+
+    if response.status_code == 200:
+        return response.json()
+    else:
+        print(f"Error fetching weather data. Status code: {response.status_code}")
+        return None
+
+# Function to display weather data
+def display_weather(weather_data):
+    if weather_data:
+        temp_kelvin = weather_data['main']['temp']
+        temp_celsius = round(temp_kelvin - 273.15, 1)  # Round to 1 decimal place
+        description = weather_data['weather'][0]['description']
+        humidity = weather_data['main']['humidity']
+        wind_speed = weather_data['wind']['speed']
+
+        print(f"Weather in {city}:")
+        print(f"Temperature: {temp_celsius}°C")
+        print(f"Description: {description.capitalize()}")  # Capitalize the first letter
+        print(f"Humidity: {humidity}%")
+        print(f"Wind Speed: {wind_speed} m/s")
+        print(f"Last Updated: {datetime.fromtimestamp(weather_data['dt']).strftime('%Y-%m-%d %H:%M:%S')}")
+    else:
+        print("No weather data available.")
+
+# Main loop for real-time monitoring
+while True:
+    weather_data = get_weather_data(city, API_KEY)
+    display_weather(weather_data)
+    time.sleep(5)  # Update every 5 seconds
