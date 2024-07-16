@@ -4,7 +4,7 @@ import time
 from datetime import datetime
 
 # Replace with your OpenWeatherMap API key
-API_KEY = "YOUR_API_KEY"
+API_KEY = "97d08cf208fcfc0bee00ff20b9c5b6c0"
 
 # Location to get weather data for
 city = "London"
